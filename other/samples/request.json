@@ -1,0 +1,14 @@
+{
+  "clave":"01230456078901230456078901230456078901230456078900",
+  "fecha":"bar",
+  "sucursal":1,
+  "emisor":{
+    "tipoIdentificacion":2,
+    "numeroIdentificacion":"012304560789"
+  },
+  "receptor":{
+    "tipoIdentificacion":2,
+    "numeroIdentificacion":"012304560789"
+  },
+  "comprobanteXml":"-----BEGIN PGP MESSAGE----- \n\n \n hQEMA4CHI5RvxAOjAQf9GOEBME2zK9V7a4NVyb83RiOPoWA7r2nWuL+dYwuEcP0k \n 5P5jl3nZGjFhXke//ympmGnw7uS3owQdlJaOazJCPia8enUGUFJPMu4fVgogBTgA \n BVugkHG4KI9dKbQ99c/gsT18f9l4PvPxgUOWQPyoSkwsJ/zJn1gARsIQSuN0dxks\n 1LOujH8mSUrqXyGnKAHDPDjFor+WUnE1TL/k7PNxf9PLA1VRkUP2v0SQ43ZQPw1I\n iZ7osS+o7W/1X0akkeAiC23gBeaj/HZ3298sra70hL35HtwauZiLUoeRiKs3rJpY\n uA/MvjkYbQiPJksQvaaWlQp3k21rEqYlAOUlM3pV3dLA1AHHNUlyXmCoj5glxg7Y\n XPv2uSW8qNTJ74WwIgNN4ebRWF3SWf9dxLhK0rqsv+4dY1AUeX9skokJzQVIt+MU\n H6iLfrpUdz22lKZbGf1P1wM1iTbQh/fs5mBoHM9Pw7LG2uYETwizn3iwmlmeqCDR\n wx+f415TJto0gOS3jpsDovUMwqiK2j5wASGOKQQUlnfLS2Gw7Hfi40TdMRMTeNCN\n HutJbb9PI4RAChO1IMVQt/P5/tpzrg5g3dIcZGY+Oq/bjCf/wIlZFk0ZMgKw7cID\n eLhBVgekW4yypZd8Zgw600UasGaEjTe2cbV27aPUyBlQFOlhNzXIT0CWhJ24aOUw\n ZNd0QhYIQmUVSAJkF050xDn6ARG2L+fr0cWofw4mBhBvZAscgS8GaYS2ucvgvbUm\n AZJ8vV05GojeljXtXXf1r08mcMMR/f6dwE/j8182wYgbAQOLzsOKuicf5SYJFAGk\n vYAFJbO0mCB5zoRNakSb3X4QL4LKYv7pFDvILAEU7ayc3o1roqCNEjTe35suBmYz\n ssofM/tz =1oK+ \n -----END PGP MESSAGE-----"
+}
