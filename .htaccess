@@ -1,0 +1,9 @@
+#Do not download my code source from site
+<FilesMatch "(\.(inc.php|ini|sh|sql|swp)|~)$">
+ Order allow,deny
+ Deny from all
+ #Satisfy All
+</FilesMatch>
+
+#Do not smell my directories
+Options All +Indexes
