@@ -90,17 +90,19 @@ COMMENT ON COLUMN ventas.vt_ordid IS 'RES. 14-10-16';
 COMMENT ON COLUMN ventas.vt_recibido IS 'ACUSE DE RECIBO';
 
 /* FUNCTIONS */
-/*Validation of lengths*/
+/*Validation of lengths - last mod Apr 8 2017*/
 CREATE OR REPLACE FUNCTION sp_fst_validation(
     clave VARCHAR(50),
     idEmisor VARCHAR(12),
     idReceptor VARCHAR(12),
+    tmstmp VARCHAR,
     idSucursal INT
 ) RETURNS VARCHAR(6) AS $passed$
 BEGIN
     IF NOT EXISTS(SELECT FROM ventas WHERE vt_ordid = clave)
        AND EXISTS(SELECT FROM persona WHERE per_ced = idEmisor)
        AND EXISTS(SELECT FROM persona WHERE per_ced = idReceptor)
+       AND is_timestamp(tmstmp)
        AND EXISTS(SELECT FROM sucursal
                     INNER JOIN persona
                       ON sucursal.sc_perid = persona.per_id
@@ -129,4 +131,14 @@ BEGIN
       RETURN 'NO';
     END IF;
 END;
+$passed$ LANGUAGE plpgsql;
+
+/*Is timestamp*/
+CREATE OR REPLACE FUNCTION is_timestamp(fecha VARCHAR) RETURNS BOOLEAN as $passed$
+BEGIN
+  PERFORM fecha::TIMESTAMP;
+  RETURN TRUE;
+EXCEPTION WHEN OTHERS THEN
+  RETURN FALSE ;
+end;
 $passed$ LANGUAGE plpgsql;

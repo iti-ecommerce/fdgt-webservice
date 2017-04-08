@@ -21,10 +21,11 @@ function fst_validation($data, &$conn){
         is_int($sucursal)){
 
         //Attempt to pass first validation against PostgreSQL
-        $rs = $conn->execSQL("SELECT sp_fst_validation(?,?,?,?)",
+        $rs = $conn->execSQL("SELECT sp_fst_validation(?,?,?,?,?)",
             array($clave,
                 $emisor["numeroIdentificacion"],
                 $receptor["numeroIdentificacion"],
+                $fecha,
                 $sucursal),
             true);
 

@@ -5,7 +5,7 @@ error_reporting(E_ERROR);
 
 define("mykey", "01EDAD6FC4548BBB68861903777DD77062D75C9F");
 define("mypass", "admin");
-define("errno0", array("code" => "errno0", "text" => "La informacion remitida de Comprobante, Emisor o Receptor NO es correcta."));
+define("errno0", array("code" => "errno0", "text" => "La informacion remitida de Comprobante, Sucursal, Fecha, Emisor o Receptor no es correcta."));
 define("errno1", array("code" => "errno1", "text" => "La informacion remitida no ha pasado la prueba de verificacion de firma digital y decriptacion."));
 define("errno2", array("code" => "errno2", "text" => "El documento XML remitido no cumple todos los requisitos para su almacenaje."));
 define("errno3", array("code" => "errno3", "text" => "El servidor no ha logrado registrar el comprobante. Contacte con la DGT."));
@@ -42,9 +42,13 @@ if ($method == "POST"){
          * STEPS:
          *  1. (Done in xsd_validation)- Verify the plain XML
          *
-         * STORE. After the last validation, the information is stored in the Database.
+         * THIRD Store. After the last validation, the information is stored in the Database.
+         * STEPS:
+         *  1. (Done in new_sale)- Store the information in the database
          *
          * RESPONSE. Once stored, the server shall make the pertinent ACK.
+         * STEPS:
+         *  1. (Done in make_ack)- Serve the signed and encrypted ack of receipt
          */
         $data = file_get_contents("php://input");
         $data = json_decode($data, TRUE);
