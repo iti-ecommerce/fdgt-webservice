@@ -101,13 +101,22 @@ function xsd_validation($XML){
 
 /** @author: @egonzalezm24
  *
- * @param $XML
- * @param $data
- * @param $conn
- * @return bool
+ * @param $XML String XML string decrypted
+ * @param $data Object <b>JSON</b >Information retrieved from php://input
+ * @param $conn gnupg <b>Object</b> Interface between PHP and GPG
+ * @return bool Whether it inserted the sale or not
  */
 function insert_sale($XML, $data, &$conn){
-    return true;
+    $sucursal = $data["sucursal"];
+    $ced = $data["emisor"]["numeroIdentificacion"];
+    $clave = $data["clave"];
+    $fecha = $data["fecha"];
+
+    $rs = $conn->execSQL("SELECT sp_new_sale(?,?,?,?,?);",
+        array($sucursal, $ced, $clave, $fecha, $XML),
+        true);
+
+    return ($rs[0]["sp_new_sale"] === "OK");
 }
 
 /** @author: @egonzalezm24

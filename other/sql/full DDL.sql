@@ -63,28 +63,27 @@ CREATE TABLE perfisica
 COMMENT ON COLUMN perfisica.pf_nom IS 'Dato Fisico eg. Jose';
 COMMENT ON COLUMN perfisica.pf_ape IS 'Dato Fisico eg. Figueres';
 
-/*Actualizado 07 Mar 17*/
+/*Actualizado 08 Mar 17*/
 CREATE TABLE sucursal
 (
-    sc_perid VARCHAR(20) NOT NULL,
-    sc_scid INTEGER NOT NULL,
-    sc_dir VARCHAR(100) NOT NULL,
-    CONSTRAINT sucursal_pkey PRIMARY KEY (sc_scid, sc_perid),
-    CONSTRAINT sucursal_persona_per_id_fk FOREIGN KEY (sc_perid) REFERENCES persona (per_id)
+  sc_cedid VARCHAR(12) NOT NULL,
+  sc_scid INTEGER NOT NULL,
+  sc_dir VARCHAR(100) NOT NULL,
+  CONSTRAINT sucursal_persona_per_ced_fk FOREIGN KEY (sc_cedid) REFERENCES persona (per_ced)
 );
-COMMENT ON COLUMN sucursal.sc_perid IS 'ID del negocio';
 COMMENT ON COLUMN sucursal.sc_dir IS 'Direccion Fisica del local';
+CREATE UNIQUE INDEX sucursal_sc_scid_sc_cedid_pk ON sucursal (sc_scid, sc_cedid);
 
-/*Actualizado 07 Mar 17*/
+/*Actualizado 08 Mar 17*/
 CREATE TABLE ventas
 (
-    vt_scid INTEGER NOT NULL,
-    vt_perid VARCHAR(20) NOT NULL,
-    vt_ordid VARCHAR(50) PRIMARY KEY NOT NULL,
-    vt_fecha DATE NOT NULL,
-    vt_xml XML NOT NULL,
-    vt_recibido XML,
-    CONSTRAINT ventas_sucursal_sc_scid_sc_perid_fk FOREIGN KEY (vt_scid, vt_perid) REFERENCES sucursal (sc_scid, sc_perid)
+  vt_cedid VARCHAR(12) NOT NULL,
+  vt_scid INTEGER NOT NULL,
+  vt_ordid VARCHAR(50) PRIMARY KEY NOT NULL,
+  vt_fecha TIMESTAMP NOT NULL,
+  vt_xml XML NOT NULL,
+  vt_recibido XML,
+  CONSTRAINT ventas_sucursal_sc_scid_sc_cedid_fk FOREIGN KEY (vt_scid, vt_cedid) REFERENCES sucursal (sc_scid, sc_cedid)
 );
 COMMENT ON COLUMN ventas.vt_ordid IS 'RES. 14-10-16';
 COMMENT ON COLUMN ventas.vt_recibido IS 'ACUSE DE RECIBO';
@@ -133,7 +132,7 @@ BEGIN
 END;
 $passed$ LANGUAGE plpgsql;
 
-/*Is timestamp*/
+/*Is timestamp?*/
 CREATE OR REPLACE FUNCTION is_timestamp(fecha VARCHAR) RETURNS BOOLEAN as $passed$
 BEGIN
   PERFORM fecha::TIMESTAMP;
@@ -141,4 +140,19 @@ BEGIN
 EXCEPTION WHEN OTHERS THEN
   RETURN FALSE ;
 end;
+$passed$ LANGUAGE plpgsql;
+
+/*New Sale*/
+CREATE OR REPLACE FUNCTION sp_new_sale(
+  scid INT,
+  cedid VARCHAR(12),
+  ord_id VARCHAR(50),
+  fecha DATE,
+  xmlobj XML
+) RETURNS VARCHAR(2) AS $passed$
+BEGIN
+  INSERT INTO ventas(vt_scid, vt_cedid, vt_ordid, vt_fecha, vt_xml, vt_recibido)
+  VALUES (scid, cedid, ord_id, fecha, xmlobj, XML '<?xml version="1.0"?><estado>PENDIENTE</estado>');
+  RETURN 'OK';
+END;
 $passed$ LANGUAGE plpgsql;
