@@ -22,10 +22,10 @@ VALUES ('DGT-06-04-2017-7-55',
         'Servicios de Tecnologias de la Informacion',
         1);
 
-INSERT INTO sucursal(sc_perid,
+INSERT INTO sucursal(sc_cedid,
                      sc_scid,
                      sc_dir)
-    VALUES ('DGT-06-04-2017-7-55',
+    VALUES ('012304560789',
             1,
             'San Ramón, Alajuela, Calle 1, Avenida 0, Campus Corporativo F. Ferrer, M2-F6');
 
