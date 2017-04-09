@@ -11,7 +11,8 @@ INSERT INTO persona(per_id,
                     per_nom,
                     per_ced,
                     per_tipoper,
-                    per_crypto,
+                    per_sign_key,
+                    per_cipher_key,
                     per_actividad,
                     per_tiporeg)
 VALUES ('DGT-06-04-2017-7-55',
@@ -19,6 +20,7 @@ VALUES ('DGT-06-04-2017-7-55',
         '012304560789',
         2,
         '9C5BE39C6AE9B9160CA8FB5D20DAAE7D5769F20E',
+        '670866753366DF160E5BD2CF274F87219EFE12EF',
         'Servicios de Tecnologias de la Informacion',
         1);
 
