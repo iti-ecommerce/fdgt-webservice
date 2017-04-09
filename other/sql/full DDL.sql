@@ -26,22 +26,23 @@ CREATE TABLE tipoperso
     tp_descr VARCHAR(50) NOT NULL
 );
 
-/*Actualizado 07 Mar 17*/
+/*Actualizado 09 Mar 17 Agregada llave de cifrado*/
 CREATE TABLE persona
 (
-    per_id VARCHAR(20) PRIMARY KEY NOT NULL,
-    per_nom VARCHAR(100) NOT NULL,
-    per_ced VARCHAR(12) NOT NULL,
-    per_tipoper INTEGER NOT NULL,
-    per_crypto VARCHAR(2000) NOT NULL,
-    per_actividad VARCHAR(150) NOT NULL,
-    per_tiporeg INTEGER NOT NULL,
-    CONSTRAINT persona_tipoperso_tp_id_fk FOREIGN KEY (per_tipoper) REFERENCES tipoperso (tp_id),
-    CONSTRAINT persona_tiporegimen_tr_id_fk FOREIGN KEY (per_tiporeg) REFERENCES tiporegimen (tr_id)
+  per_id VARCHAR(20) PRIMARY KEY NOT NULL,
+  per_nom VARCHAR(100) NOT NULL,
+  per_ced VARCHAR(12) NOT NULL,
+  per_tipoper INTEGER NOT NULL,
+  per_sign_key VARCHAR(2000) NOT NULL,
+  per_cipher_key VARCHAR(1000) NOT NULL,
+  per_actividad VARCHAR(150) NOT NULL,
+  per_tiporeg INTEGER NOT NULL,
+  CONSTRAINT persona_tipoperso_tp_id_fk FOREIGN KEY (per_tipoper) REFERENCES tipoperso (tp_id),
+  CONSTRAINT persona_tiporegimen_tr_id_fk FOREIGN KEY (per_tiporeg) REFERENCES tiporegimen (tr_id)
 );
 COMMENT ON COLUMN persona.per_nom IS 'Nombre de la persona/sociedad';
 CREATE UNIQUE INDEX persona_per_ced_uindex ON persona (per_ced);
-CREATE UNIQUE INDEX persona_per_crypto_uindex ON persona (per_crypto);
+CREATE UNIQUE INDEX persona_per_crypto_uindex ON persona (per_sign_key);
 
 CREATE TABLE contacto
 (
@@ -91,44 +92,41 @@ COMMENT ON COLUMN ventas.vt_recibido IS 'ACUSE DE RECIBO';
 /* FUNCTIONS */
 /*Validation of lengths - last mod Apr 8 2017*/
 CREATE OR REPLACE FUNCTION sp_fst_validation(
-    clave VARCHAR(50),
-    idEmisor VARCHAR(12),
-    idReceptor VARCHAR(12),
-    tmstmp VARCHAR,
-    idSucursal INT
+  clave VARCHAR(50),
+  idEmisor VARCHAR(12),
+  idReceptor VARCHAR(12),
+  tmstmp VARCHAR,
+  idSucursal INT
 ) RETURNS VARCHAR(6) AS $passed$
 BEGIN
-    IF NOT EXISTS(SELECT FROM ventas WHERE vt_ordid = clave)
-       AND EXISTS(SELECT FROM persona WHERE per_ced = idEmisor)
-       AND EXISTS(SELECT FROM persona WHERE per_ced = idReceptor)
-       AND is_timestamp(tmstmp)
-       AND EXISTS(SELECT FROM sucursal
-                    INNER JOIN persona
-                      ON sucursal.sc_perid = persona.per_id
-                  WHERE per_ced = idEmisor AND sc_scid = idSucursal)
-      THEN
-      RETURN 'PASSED';
-      ELSE
-      RETURN 'NO';
-    END IF;
+  IF NOT EXISTS(SELECT FROM ventas WHERE vt_ordid = clave)
+     AND EXISTS(SELECT FROM persona WHERE per_ced = idEmisor)
+     AND EXISTS(SELECT FROM persona WHERE per_ced = idReceptor)
+     AND is_timestamp(tmstmp)
+     AND EXISTS(SELECT FROM sucursal WHERE sc_cedid = idEmisor AND sc_scid = idSucursal)
+  THEN
+    RETURN 'PASSED';
+  ELSE
+    RETURN 'NO';
+  END IF;
 END;
 $passed$ LANGUAGE plpgsql;
 
-/*Sign validation*/
+/*Sign validation Ahora en exito devuelve llae de cifrado*/
 CREATE OR REPLACE FUNCTION sp_crypto_validation(
-    crypto VARCHAR(2000),
-    ced VARCHAR(12)
-) RETURNS VARCHAR(6) AS $passed$
+  crypto VARCHAR(2000),
+  ced VARCHAR(12)
+) RETURNS VARCHAR AS $passed$
 BEGIN
-    IF EXISTS(SELECT per_id
-                  FROM persona
-                  WHERE per_crypto = crypto
-                        AND per_ced = ced)
-      THEN
-      RETURN 'PASSED';
-      ELSE
-      RETURN 'NO';
-    END IF;
+  IF EXISTS(SELECT per_id
+            FROM persona
+            WHERE per_sign_key = crypto
+                  AND per_ced = ced)
+  THEN
+    RETURN (SELECT per_cipher_key FROM persona WHERE per_ced = ced AND per_sign_key = crypto);
+  ELSE
+    RETURN 'NO';
+  END IF;
 END;
 $passed$ LANGUAGE plpgsql;
 
@@ -153,6 +151,19 @@ CREATE OR REPLACE FUNCTION sp_new_sale(
 BEGIN
   INSERT INTO ventas(vt_scid, vt_cedid, vt_ordid, vt_fecha, vt_xml, vt_recibido)
   VALUES (scid, cedid, ord_id, fecha, xmlobj, XML '<?xml version="1.0"?><estado>PENDIENTE</estado>');
+  RETURN 'OK';
+END;
+$passed$ LANGUAGE plpgsql;
+
+/*Insert Ack -LM Apr 9 2017*/
+CREATE OR REPLACE FUNCTION sp_insert_ack(
+  ord_id VARCHAR(50),
+  xmlobj XML
+) RETURNS VARCHAR(2) AS $passed$
+BEGIN
+  UPDATE ventas
+    SET vt_recibido = XML(xmlobj)
+    WHERE vt_ordid = ord_id;
   RETURN 'OK';
 END;
 $passed$ LANGUAGE plpgsql;

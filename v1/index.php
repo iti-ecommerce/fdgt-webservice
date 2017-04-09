@@ -56,7 +56,7 @@ if ($method == "POST"){
         $XML = fst_validation($data, $conn) ? crypto_validation($data, $conn, $gpg) : deliver_response(400, "Error", errno0);
         $passed_xsd = !$XML ? deliver_response(400, "Error", errno1) : xsd_validation($XML);
         $inserted_sale = $passed_xsd ? insert_sale($XML, $data, $conn) : deliver_response(400, "Error", errno2);
-        $ack_sent = $inserted_sale ? make_ack($data) : deliver_response(500, "Internal Server Error", errno3);
+        $ack_sent = $inserted_sale ? make_ack($data, $conn, $gpg) : deliver_response(500, "Internal Server Error", errno3);
 
         !$ack_sent ? deliver_response(500, "Internal Server Error", errno4) : exit;
     }

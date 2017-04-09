@@ -68,8 +68,9 @@ function crypto_validation($data, &$conn, &$gpg){
                     $author["ced"]),
                 true);
 
-            if ($rs[0]["sp_crypto_validation"] === "PASSED"){ //The information pass all th verifications
+            if ($rs[0]["sp_crypto_validation"] !== "NO"){ //The information pass all the verifications
                 try {
+                    define("pos_key", $rs[0]["sp_crypto_validation"]); //For encrypting ack later
                     $XML = $gpg -> decrypt($signedXML);
                     $gpg -> cleardecryptkeys();
                     return !$XML ? false : $XML ;
@@ -103,7 +104,7 @@ function xsd_validation($XML){
  *
  * @param $XML String XML string decrypted
  * @param $data Object <b>JSON</b >Information retrieved from php://input
- * @param $conn gnupg <b>Object</b> Interface between PHP and GPG
+ * @param $conn pgsql_conn <b>Object</b> Interface between PHP and GPG
  * @return bool Whether it inserted the sale or not
  */
 function insert_sale($XML, $data, &$conn){
@@ -119,13 +120,48 @@ function insert_sale($XML, $data, &$conn){
     return ($rs[0]["sp_new_sale"] === "OK");
 }
 
-/** @author: @egonzalezm24
- *
- * @param $data
- * @return bool
+/**
+ * @param $data Object <b>JSON</b >Information retrieved from php://input
+ * @param $conn pgsql_conn <b>Object</b> Interface between PHP and GPG
+ * @param $gpg gnupg <b>Object</b> Interface between PHP and GPG
+ * @return bool Whether it sent the acknowledge of receipt or not
  */
-function make_ack($data){
-    return false;
+function make_ack($data, &$conn, &$gpg){
+    $gpg->addsignkey(mykey, mypass);
+    $gpg -> addencryptkey(pos_key);
+    $plain_XML = do_hash($data);
+    $rs = $conn->execSQL("SELECT sp_insert_ack(?,?)",
+        array($data["clave"],
+            $plain_XML),
+        true);
+    if ($rs[0]["sp_insert_ack"] === "OK"){
+        try {
+            $signed_XML = $gpg -> encryptsign($plain_XML);
+            echo json_encode(array(
+                "clave" => $data["clave"],
+                "fecha" => $data["fecha"],
+                "indEstado" => "RECIBIDO",
+                "respuestaXML" => $signed_XML
+            ));
+            $gpg -> clearencryptkeys();
+            $gpg -> clearsignkeys();
+            return true;
+        } catch (Exception $ex){
+            return false;
+        }
+    } else {
+        return false;
+    }
+}
+
+/**
+ * @param $data Object <b>JSON</b >Information retrieved from php://input
+ * @return string The XML ack
+ */
+function do_hash($data){
+    $hashSrc = $data["clave"]."-".$data["receptor"]["numeroIdentificacion"]."-".microtime();
+    $ack_XML = "<?xml version='1.0'?><acuse><ID>".hash("sha256", $hashSrc)."</ID><estado>RECIBIDO</estado></acuse>";
+    return $ack_XML;
 }
 
 /** @author: York
